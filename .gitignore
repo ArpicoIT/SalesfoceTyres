@@ -44,7 +44,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Development related
+# Production related
 .build_files
 release-key.jks
 /android/key.properties
