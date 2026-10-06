@@ -48,3 +48,5 @@ app.*.map.json
 .build_files
 release-key.jks
 /android/key.properties
+
+lib/config/app_config.dart
