@@ -1,0 +1,32 @@
+[
+{
+  "_id": "6a82ab294b91bb8159eadb69",
+  "sbu_code": "660",
+  "loc_code": "27",
+  "doc_code": "CQRT",
+  "doc_no": "6768",
+  "cs_code": "NDR0674",
+  "rep_id": "NTR",
+  "txn_date": "2016-02-28",
+  "due_amount": 7903,
+  "original_amount": 663262,
+  "creadt": "2026-08-17 12:03:13",
+  "modidt": "2026-08-17 12:03:13",
+  "setoff_amount": 0,
+  "discount_percentage": 0
+},
+
+{
+  "_id": "6a825773fc48836ea16c660b",
+  "sbu_code": "660",
+  "loc_code": "27",
+  "doc_code": "NCDN",
+  "doc_no": "31262",
+  "cs_code": "NDR0609",
+  "rep_id": "NTR",
+  "txn_date": "2015-03-31",
+  "due_amount": -312.49,
+  "creadt": "2026-08-17 06:06:03",
+  "modidt": "2026-08-17 06:06:03"
+}
+  ]
