@@ -25,7 +25,7 @@ class InvoiceApiRepository {
         data: {
           "rep_name": currentUser.userName,
           "cs_code": customer.csCode,
-          "cs_name": customer.csName?.replaceSlash,
+          "cs_name": customer.csName.replaceSlash,
           "sbu_code": currentUser.sbuCode,
           "loc_code": currentUser.locCode,
           "Invoice_Amount": invoice.originalAmount,
@@ -38,7 +38,7 @@ class InvoiceApiRepository {
         ),
       );
 
-      final Map<String, dynamic> data = jsonDecode(res.data) as Map<String, dynamic>;
+      final data = Map<String, dynamic>.from(res.data as Map);
 
       return ApiResponse.success(
         statusCode: res.statusCode,

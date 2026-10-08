@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:locafy/locafy.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/date_time_helper.dart';
 import '../../helpers/list_helper.dart';
 import '../../helpers/number_helper.dart';
 import '../../helpers/responsive.dart';
@@ -31,7 +32,6 @@ import 'helpers/collection_ui_helper.dart';
 import 'notifiers/invoice_setoff_notifier.dart';
 import 'widgets/apply_invoice_credit_widget.dart';
 import 'widgets/apply_invoice_discount_widget.dart';
-import 'widgets/submit_collection_widget.dart';
 
 class InvoiceSetOffView extends StatefulWidget {
   const InvoiceSetOffView({super.key});
@@ -47,24 +47,30 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
   /// Keys
   final _invoicesKey = GlobalKey<ModelListViewState<InvoiceModel>>();
   final _collectionKey = GlobalKey<ModelListViewState<CollectionSetOffModel>>();
+  final _remarkKey = GlobalKey();
 
   /// Controller
   final remarkController = TextEditingController();
 
   /// Editing controllers
-  final TextEditingController _remarkController= TextEditingController() ;
+  final TextEditingController _remarkController = TextEditingController();
 
   /// Focus nodes
   final _remarkFocus = FocusNode();
 
   /// Notifiers
   late InvoiceSetOffNotifier notifier;
+  final _showFab = ValueNotifier(true);
 
   /// Variables
-  double receiptAmount = 0.0;
+  late CustomerModel customer;
+  late double receiptAmount;
+  late PaymentDetails paymentDetails;
+
   double receiptBalanceAmount = 0.0;
-  CustomerModel? customer;
-  PaymentDetails? paymentDetails;
+  bool _isSubmitting = false;
+  bool _isAutoScrolling = false;
+  bool _hasAutoScrolledToRemarks = false;
 
   /// Getters
   List<InvoiceModel> get invoices => notifier.invoices;
@@ -84,23 +90,32 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
   /// Constants
   final int negative = -1;
 
-  final GlobalKey _remarkKey = GlobalKey();
-  final ValueNotifier<bool> _showFab = ValueNotifier(true);
-
   @override
   void initState() {
     super.initState();
+
     notifier = InvoiceSetOffNotifier();
     _scrollController.addListener(_onScroll);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        final args =
-            ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    customer = CustomerModel.defaults();
+    receiptAmount = 0.0;
+    paymentDetails = PaymentDetails();
 
-        customer = args['customer'] as CustomerModel?;
-        receiptAmount = args['receiptAmount'] as double? ?? 0.0;
-        paymentDetails = args['paymentDetails'] as PaymentDetails?;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      try {
+        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+        if (args == null) {
+          debugPrint('Invoice Set-Off: Route arguments are missing');
+          return;
+        }
+
+        customer = args['customer'] as CustomerModel? ?? customer;
+        receiptAmount = args['receiptAmount'] as double? ?? receiptAmount;
+        paymentDetails = args['paymentDetails'] as PaymentDetails? ?? paymentDetails;
+
         final invoices = args['invoices'] as List<InvoiceModel>? ?? [];
         final creditNotes = args['creditNotes'] as List<CreditNoteModel>? ?? [];
 
@@ -108,12 +123,14 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
         notifier.setCreditNotes(creditNotes);
 
         _transformInitialInvoices();
+
         invoicesState?.refresh();
+
         receiptBalanceAmount = receiptAmount;
-      } catch (e) {
-        debugPrint("Invoice Set-Off: Initialise error: ${e.toString()}");
-      } finally {
-        if (mounted) setState(() {});
+
+        if (mounted) {setState(() {});}
+      } catch (e, stackTrace) {
+        debugPrint('Invoice Set-Off: Initialise error: $e\n$stackTrace');
       }
     });
   }
@@ -121,9 +138,6 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
   void _onScroll() {
     _updateFabVisibility();
   }
-
-  bool _isAutoScrolling = false;
-  bool _hasAutoScrolledToRemarks = false;
 
   void _updateFabVisibility() {
     final context = _remarkKey.currentContext;
@@ -144,8 +158,7 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
     final remarksTop = position.dy;
     final remarksBottom = remarksTop + size.height;
 
-    final isRemarksVisible =
-        remarksBottom > 0 && remarksTop < screenHeight;
+    final isRemarksVisible = remarksBottom > 0 && remarksTop < screenHeight;
 
     // Hide/show FAB based on Remarks visibility.
     final shouldShowFab = !isRemarksVisible;
@@ -181,46 +194,14 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
   void _jumpToBottom() {
     _scrollController
         .animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-    )
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        )
         .whenComplete(() {
-      _isAutoScrolling = false;
-    });
+          _isAutoScrolling = false;
+        });
   }
-
-  /*void _updateFabVisibility() {
-    final context = _remarkKey.currentContext;
-
-    if (context == null) return;
-
-    final renderObject = context.findRenderObject();
-
-    if (renderObject is! RenderBox || !renderObject.hasSize) {
-      return;
-    }
-
-    final position = renderObject.localToGlobal(Offset.zero);
-    final size = renderObject.size;
-
-    final screenHeight = MediaQuery.sizeOf(context).height;
-
-    final remarksTop = position.dy;
-    final remarksBottom = remarksTop + size.height;
-
-    // Remarks is visible when any part of it
-    // is inside the screen.
-    final isRemarksVisible =
-        remarksBottom > 0 && remarksTop < screenHeight;
-
-    final shouldShowFab = !isRemarksVisible;
-
-    if (_showFab.value != shouldShowFab) {
-      _showFab.value = shouldShowFab;
-    }
-  }*/
-
 
   void _transformInitialInvoices() {
     /// Set row status according conditions.
@@ -306,7 +287,8 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
   }
 
   Future<void> _unlockNextInvoiceAfterDiscount() async {
-    if (selectedInvoice.currentCashDiscount <= 0 && selectedInvoice.currentBulkDiscount <= 0) {
+    if (selectedInvoice.currentCashDiscount <= 0 &&
+        selectedInvoice.currentBulkDiscount <= 0) {
       debugPrint('Current invoice has no discount. No invoice to unlock.');
       return;
     }
@@ -342,7 +324,10 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
     }
 
     notifier.updateInvoiceAt(nextIndex, (item) => item.copyWith(rowSts: .UNL));
-    notifier.updateInvoiceAt(currentIndex, (item) => item.copyWith(nextInvoiceUnlockedByGivenDiscount: true));
+    notifier.updateInvoiceAt(
+      currentIndex,
+      (item) => item.copyWith(nextInvoiceUnlockedByGivenDiscount: true),
+    );
     debugPrint('Unlocked next invoice: ${nextInvoice.id}.');
   }
 
@@ -395,14 +380,14 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
           invoice.cashDiscount > 0 || invoice.currentCashDiscount > 0
           ? true
           : await CollectionDbRepository.hasInvoiceDiscountHistory(
-              invoice.docCode!,
-              invoice.docNo!,
+              invoice.docCode,
+              invoice.docNo,
             );
 
       /// 2. check customer has credit notes
       final bool hasCreditNotes =
           await CreditNoteDbRepository.hasCreditNotesForCustomer(
-            customer!.csCode!,
+            customer!.csCode,
           );
 
       if (!context.mounted) return;
@@ -490,7 +475,7 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
           recallDelay: const Duration(seconds: 5),
           execute: () async {
             final res = await InvoiceApiRepository.checkApprovalState(
-              invoice.docNo!,
+              invoice.docNo,
             );
 
             final String? status = res.data?['request_status'];
@@ -634,8 +619,8 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
           recType: DBConstants.DOC_INVOICE,
           recDoc: DBConstants.DOC_RCPD,
           recNo: DBConstants.DOC_RCPD,
-          invDoc: selectedInvoice.docCode!,
-          invNo: selectedInvoice.docNo!,
+          invDoc: selectedInvoice.docCode,
+          invNo: selectedInvoice.docNo,
           setOffAmount: finalSetOffAmount,
           createdAt: DateTime.now(),
         ),
@@ -669,8 +654,8 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
           recType: DBConstants.DOC_INVOICE,
           recDoc: DBConstants.DOC_RCPD,
           recNo: DBConstants.DOC_RCPD,
-          invDoc: selectedInvoice.docCode!,
-          invNo: selectedInvoice.docNo!,
+          invDoc: selectedInvoice.docCode,
+          invNo: selectedInvoice.docNo,
           setOffAmount: finalSetOffAmount,
           createdAt: DateTime.now(),
         ),
@@ -692,35 +677,6 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
     }
   }
 
-  // void onSubmitCollection(BuildContext context) async {
-  //   final canPop = await showModalBottomSheet(
-  //     context: context,
-  //     useSafeArea: true,
-  //     showDragHandle: false,
-  //     isScrollControlled: true,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-  //     ),
-  //     clipBehavior: Clip.antiAlias,
-  //     isDismissible: false,
-  //     builder: (context) => ChangeNotifierProvider.value(
-  //       value: notifier,
-  //       child: SubmitCollectionWidget(
-  //         customer: customer!,
-  //         receiptAmount: receiptAmount,
-  //         paymentDetails: paymentDetails!,
-  //         remarkController: remarkController,
-  //       ),
-  //     ),
-  //   );
-  //
-  //   if (canPop == true && context.mounted) {
-  //     Navigator.of(context).pop(canPop);
-  //   }
-  // }
-
-  bool _isSubmitting = false;
-
   void onSubmit() async {
     if (_isSubmitting) return;
 
@@ -728,19 +684,17 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
     unfocus();
 
     try {
-
       final confirm = await _confirmIncompleteSetOffs();
 
-      if(!confirm) return;
+      if (!confirm) return;
 
       final submitted = await _submitting();
 
-      if(!submitted) return;
+      if (!submitted) return;
 
-      if(mounted){
+      if (mounted) {
         Navigator.of(context).pop(true);
       }
-
     } finally {
       _isSubmitting = false;
       if (mounted) setState(() {});
@@ -753,7 +707,7 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
     final confirmed = await context.showConfirmDialog(
       title: 'No Set-Offs Added',
       message:
-      'No set-offs have been added to this collection. '
+          'No set-offs have been added to this collection. '
           'Do you want to continue without adding any set-offs?',
       confirmText: 'Yes, Continue',
       cancelText: 'No',
@@ -774,8 +728,14 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
       final currentUser = await IAMService.instance.currentUser();
 
       final header = CollectionHeaderModel(
+        sbuCode: currentUser.sbuCode ?? '',
+        locCode: currentUser.locCode ?? '',
+        docCode: DBConstants.DOC_RCPD,
+        docNo: NumberHelper.getSerialNumber(currentUser.tabCode),
+        txnDate: DateTimeHelper.getTxnDate(),
+        synSts: SyncStatus.PEND,
         csCode: customer!.csCode,
-        payMode: paymentDetails!.payMode,
+        payMode: paymentDetails!.payMode!,
         totalAmount: receiptAmount,
         chqNo: paymentDetails!.chqNumber,
         chqDate: paymentDetails!.chqDate,
@@ -785,24 +745,34 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
         remark: _remarkController.text,
         gpsLat: position.latitude,
         gpsLng: position.longitude,
+        createdBy: currentUser.userId ?? '',
+        createdAt: DateTimeHelper.getDateTime(),
+        tabCode: currentUser.tabCode,
       );
 
       final details = setOffs
           .map(
             (e) => CollectionDetailModel(
-          seqNo: e.seq,
-          recDoc: e.recDoc,
-          recNo: e.recNo,
-          invDoc: e.invDoc,
-          invNo: e.invNo,
-          setOffAmount: e.setOffAmount.toDouble(),
-          discount: e.discount.toDouble(),
-        ),
-      )
+              sbuCode: header.sbuCode,
+              locCode: header.locCode,
+              docCode: header.docCode,
+              docNo: header.docNo,
+              seqNo: e.seq ?? -1,
+              recDoc: e.recDoc,
+              recNo: e.recNo,
+              invDoc: e.invDoc,
+              invNo: e.invNo,
+              setOffAmount: e.setOffAmount.toDouble(),
+              discount: e.discount.toDouble(),
+              txnDate: header.txnDate,
+              synSts: SyncStatus.PEND,
+              createdBy: header.createdBy,
+              createdAt: DateTimeHelper.getDateTime(),
+            ),
+          )
           .toList();
 
       final insertResult = await CollectionDbRepository.insertCollection(
-        currentUser,
         header,
         details,
       );
@@ -814,8 +784,8 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
       snackBar.success(
         title: 'Payment Collection Submitted',
         message:
-        'Payment collection was successfully submitted. '
-            'Document No: ${insertResult.header?.docNo}',
+            'Payment collection was successfully submitted. '
+            'Document No: ${insertResult.header.docNo}',
       );
 
       return true;
@@ -833,7 +803,6 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
     _remarkFocus.unfocus();
     FocusScope.of(context).unfocus();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -895,7 +864,9 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
               AppSliverBox(
                 padding: const .fromLTRB(24, 24, 24, 24),
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.width * 0.9),
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.width * 0.9,
+                  ),
                   child: ModelListView<InvoiceModel>(
                     key: _invoicesKey,
                     shrinkWrap: true,
@@ -922,11 +893,14 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
                           txnDate: invoice.txnDate ?? 'N/A',
                           locName: invoice.locName,
                           cashDiscount: invoice.cashDiscount.toDouble(),
-                          currentCashDiscount: invoice.currentCashDiscount.toDouble(),
+                          currentCashDiscount: invoice.currentCashDiscount
+                              .toDouble(),
                           bulkDiscount: invoice.bulkDiscount.toDouble(),
-                          currentBulkDiscount: invoice.currentBulkDiscount.toDouble(),
+                          currentBulkDiscount: invoice.currentBulkDiscount
+                              .toDouble(),
                         ),
-                    separatorBuilder: (context, i) => const SizedBox(height: 12),
+                    separatorBuilder: (context, i) =>
+                        const SizedBox(height: 12),
                     canSelect: (invoice) => invoice.rowSts == .UNL,
                     onTap: (invoice, selected) {
                       if (invoice.rowSts != .UNL) {
@@ -949,7 +923,9 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
                 // padding: const .fromLTRB(24, 24, 24, 0),
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
                     color: cs.surface,
                     boxShadow: [
                       BoxShadow(
@@ -957,7 +933,7 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
-                    ]
+                    ],
                   ),
                   child: Column(
                     children: [
@@ -968,10 +944,14 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
                           spacing: 24,
                           children: [
                             ConstrainedBox(
-                              constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.width * 0.5),
+                              constraints: BoxConstraints(
+                                minHeight:
+                                    MediaQuery.of(context).size.width * 0.5,
+                              ),
                               child: ModelListView<CollectionSetOffModel>(
                                 title: 'Collection Details',
-                                subtitle: 'Review credit note allocations, discounts, and receipt set-offs before submitting.',
+                                subtitle:
+                                    'Review credit note allocations, discounts, and receipt set-offs before submitting.',
                                 key: _collectionKey,
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
@@ -980,27 +960,31 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
                                 items: setOffs,
                                 enablePagination: true,
                                 enableSearch: true,
-                                searchMatcher: (setOff, query) =>
-                                    setOff.searchKey.toLowerCase().contains(query.toLowerCase()),
+                                searchMatcher: (setOff, query) => setOff
+                                    .searchKey
+                                    .toLowerCase()
+                                    .contains(query.toLowerCase()),
                                 itemBuilder: (context, setOff, selected) {
                                   return CollectionUiHelper.of(
                                     context,
                                   ).setOffTile(setOff, true, onRemove: null);
                                 },
-                                separatorBuilder: (context, i) => SizedBox(height: 12),
+                                separatorBuilder: (context, i) =>
+                                    SizedBox(height: 12),
                                 canSelect: (setOff) => false,
                                 // onMultiSelectChanged: onMultiSelectChanged,
                               ),
                             ),
                             TextInputField(
-                                key: _remarkKey,
-                                controller: _remarkController,
-                                focusNode: _remarkFocus,
-                                hint: 'Add your remark here',
-                                maxLines: 7,
-                                minLines: 5,
-                                maxLength: 250,
-                                inputFormatters: TextInputFormatters.noteFormatter()
+                              key: _remarkKey,
+                              controller: _remarkController,
+                              focusNode: _remarkFocus,
+                              hint: 'Add your remark here',
+                              maxLines: 7,
+                              minLines: 5,
+                              maxLength: 250,
+                              inputFormatters:
+                                  TextInputFormatters.noteFormatter(),
                             ),
                           ],
                         ),
@@ -1009,26 +993,26 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
                         width: .infinity,
                         decoration: BoxDecoration(
                           // borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                            color: cs.surface,
-                            boxShadow: [
-                              BoxShadow(
-                                color: cs.primary.withValues(alpha: 0.12),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
+                          color: cs.surface,
+                          boxShadow: [
+                            BoxShadow(
+                              color: cs.primary.withValues(alpha: 0.12),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         padding: .symmetric(vertical: 12, horizontal: 24),
                         child: AppButton.of(context).filled(
-                            onPressed: onSubmit,
-                            label: 'Submit Collection',
-                            loading: _isSubmitting,
-                            loadingLabel: 'Submitting...'
+                          onPressed: onSubmit,
+                          label: 'Submit Collection',
+                          loading: _isSubmitting,
+                          loadingLabel: 'Submitting...',
                         ),
-                      )
+                      ),
                     ],
                   ),
-                )
+                ),
               ),
             ],
             // floatingActionButton: FloatingActionButton.extended(
@@ -1203,6 +1187,108 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
     super.dispose();
   }
 }
+
+// class InvoiceAction extends StatelessWidget {
+//   const InvoiceAction({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Builder(
+//       builder: (context) {
+//         notifier = context.watch<InvoiceSetOffNotifier>();
+//
+//         /// check Invoice and receipt has available balance in every update
+//         final canSetOff =
+//             receiptBalanceAmount > 0 &&
+//                 notifier.selectedInvoice.balanceAmount > 0;
+//
+//         final isPhone = Responsive.of(context).isPhone;
+//
+//         final actions = <Widget>[
+//           isPhone
+//               ? AppButton.of(context).tonal(
+//             onPressed: () => onApplyDiscount(context),
+//             label: 'Apply Discount',
+//             icon: Icons.discount,
+//             enabled: canApplyDiscount,
+//           )
+//               : AppRoundButton.of(context).tonal(
+//             onPressed: () => onApplyDiscount(context),
+//             label: 'Apply Discount',
+//             icon: Icons.discount_rounded,
+//             enabled: canApplyDiscount,
+//           ),
+//
+//           isPhone
+//               ? AppButton.of(context).outlined(
+//             onPressed: () => onApplyCredit(context),
+//             label: 'Apply Credit',
+//             icon: Icons.credit_card,
+//             enabled: canApplyCredit,
+//           )
+//               : AppRoundButton.of(context).outlined(
+//             onPressed: () => onApplyCredit(context),
+//             label: 'Apply Credit',
+//
+//             icon: Icons.credit_card_rounded,
+//             enabled: canApplyCredit,
+//           ),
+//
+//           isPhone
+//               ? AppButton.of(context).filled(
+//             onPressed: () => onInvoiceSetOff(context, canPop: true),
+//             label: 'Invoice Set-Off',
+//             icon: Icons.receipt_long,
+//             enabled: canSetOff,
+//           )
+//               : AppRoundButton.of(context).filled(
+//             onPressed: () => onInvoiceSetOff(context, canPop: true),
+//             label: 'Invoice Set-Off',
+//
+//             icon: Icons.receipt_long_rounded,
+//             enabled: canSetOff,
+//           ),
+//         ];
+//
+//         return Material(
+//           color: Colors.transparent,
+//           child: Padding(
+//             padding: const .all(24),
+//             child: Column(
+//               mainAxisSize: .min,
+//               spacing: 24,
+//               children: [
+//                 CollectionUiHelper.of(context).invoiceDetailHeader(
+//                   selectedInvoice,
+//                   showDiscount: true,
+//                   showCurrentBalance: true,
+//                   showAppliedDiscount: true,
+//                   showAppliedCreditAmount: true,
+//                 ),
+//
+//                 Divider(height: 0),
+//
+//                 isPhone
+//                     ? Column(
+//                   mainAxisSize: .min,
+//                   crossAxisAlignment: .stretch,
+//                   spacing: 16,
+//                   children: actions,
+//                 )
+//                     : Row(
+//                   mainAxisSize: .max,
+//                   mainAxisAlignment: .spaceEvenly,
+//                   spacing: 28,
+//                   children: actions,
+//                 ),
+//               ],
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }
 
 ///
 // void onViewPayMode(BuildContext context) async {

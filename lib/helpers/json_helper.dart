@@ -21,20 +21,6 @@ class JsonHelper {
     return list.map((e) => toJson(fromJson(e))).toList();
   }
 
-  // static double? toDouble(dynamic value) {
-  //   if (value == null) return null;
-  //
-  //   if (value is double) return value;
-  //   if (value is int) return value.toDouble();
-  //   if (value is num) return value.toDouble();
-  //
-  //   if (value is String) {
-  //     return double.tryParse(value.trim());
-  //   }
-  //
-  //   return null;
-  // }
-
   static double? getDouble(
       Map<String, dynamic> json,
       List<String> keys, {
@@ -97,7 +83,9 @@ class JsonHelper {
     return defaultValue;
   }
 
-  static DateTime? getDateTime(Map<String, dynamic> json, List<String> keys) {
+  static DateTime? getDateTime(Map<String, dynamic> json, List<String> keys, {
+    DateTime? defaultValue,
+  }) {
     for (final key in keys) {
       final value = json[key];
 
@@ -108,7 +96,7 @@ class JsonHelper {
       return DateTime.tryParse(value.toString());
     }
 
-    return null;
+    return defaultValue;
   }
 
   static T? getValue<T extends Object>(Map<String, dynamic> json, List<String> keys, {T? defaultValue}) {
@@ -127,7 +115,7 @@ class JsonHelper {
       return value;
     }
 
-    return null;
+    return defaultValue;
   }
 
   static T? getEnum<T extends Enum>(
@@ -159,19 +147,34 @@ class JsonHelper {
 
     return defaultValue;
   }
-
-  // static T enumValue<T extends Enum>(
-  //     dynamic value,
-  //     List<T> values, {
-  //       required T defaultValue,
-  //     }) {
-  //   if (value == null) {
-  //     return defaultValue;
-  //   }
-  //
-  //   return values.firstWhere(
-  //         (e) => e.name == value.toString(),
-  //     orElse: () => defaultValue,
-  //   );
-  // }
 }
+
+/// -----
+// static double? toDouble(dynamic value) {
+//   if (value == null) return null;
+//
+//   if (value is double) return value;
+//   if (value is int) return value.toDouble();
+//   if (value is num) return value.toDouble();
+//
+//   if (value is String) {
+//     return double.tryParse(value.trim());
+//   }
+//
+//   return null;
+// }
+/// -----
+// static T enumValue<T extends Enum>(
+//     dynamic value,
+//     List<T> values, {
+//       required T defaultValue,
+//     }) {
+//   if (value == null) {
+//     return defaultValue;
+//   }
+//
+//   return values.firstWhere(
+//         (e) => e.name == value.toString(),
+//     orElse: () => defaultValue,
+//   );
+// }

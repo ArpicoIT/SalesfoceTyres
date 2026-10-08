@@ -167,7 +167,7 @@ class _BankDepositsState extends State<BankDeposits> {
       ),
       body: DateGroupTabs<DepositItem>(
         items: items,
-        dateSelector: (e) => e.collection!.createdAt!,
+        dateSelector: (e) => e.collection!.createdAt,
         onRefresh: _loadCollections,
         separatorBuilder: (ctx, index) => SizedBox.shrink(),
         itemBuilder: (ctx, item, index) {
@@ -185,7 +185,7 @@ class _BankDepositsState extends State<BankDeposits> {
                   crossAxisAlignment: .start,
                   children: [
                     buildSubtitle(
-                      item.collection?.payMode?.label,
+                      item.collection?.payMode.label,
                       NumberHelper.formatCurrency(item.collection?.totalAmount),
                       valueColor: Colors.green,
                     ),
@@ -344,9 +344,9 @@ class _DepositDetailsState extends State<DepositDetails> {
   Future<void> uploadSlip(UserModel currentUser) async {
     final snackBar = AppSnackBar.instance;
 
-    final docCode = _item.collection!.docCode!;
-    final docNo = _item.collection!.docNo!;
-    final bankCode = _item.bank!.bankCode!;
+    final docCode = _item.collection!.docCode;
+    final docNo = _item.collection!.docNo;
+    final bankCode = _item.bank!.bankCode;
 
     final res = await UploadApiRepository.uploadSlip(
       currentUser,
@@ -456,7 +456,7 @@ class _DepositDetailsState extends State<DepositDetails> {
                   _buildInfoRow(
                     Icons.payments_rounded,
                     'Payment Mode',
-                    _item.collection?.payMode?.label ?? 'N/A',
+                    _item.collection?.payMode.label ?? 'N/A',
                   ),
                   _buildInfoRow(
                     Icons.payments_outlined,

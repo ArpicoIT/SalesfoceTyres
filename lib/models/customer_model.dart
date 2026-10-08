@@ -3,35 +3,35 @@ import '../services/database/db_columns.dart';
 
 class CustomerModel {
   final dynamic id;
-  final String? sbuCode;
-  final String? csCode;
-  final String? csName;
+  final String sbuCode;
+  final String csCode;
+  final String csName;
   final String? address1;
   final String? address2;
   final String? address3;
   final String? city;
-  final String? repId;
+  final String repId;
   final String? mobile;
   final num creditLimit;
   final num creditBalance;
-  final String? createdBy;
-  final DateTime? createdAt;
+  final String createdBy;
+  final DateTime createdAt;
 
   const CustomerModel({
     this.id,
-    this.sbuCode,
-    this.csCode,
-    this.csName,
+    required this.sbuCode,
+    required this.csCode,
+    required this.csName,
     this.address1,
     this.address2,
     this.address3,
     this.city,
-    this.repId,
+    required this.repId,
     this.mobile,
     this.creditLimit = 0,
     this.creditBalance = 0,
-    this.createdBy,
-    this.createdAt,
+    required this.createdBy,
+    required this.createdAt,
   });
 
   CustomerModel copyWith({
@@ -71,19 +71,19 @@ class CustomerModel {
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(
       id: json[DBColumns.ID],
-      sbuCode: json[DBColumns.SBU_CODE],
-      csCode: json[DBColumns.CS_CODE],
-      csName: JsonHelper.getValue<String>(json, [DBColumns.CS_NAME, 'name']),
-      address1: JsonHelper.getValue<String>(json, [DBColumns.ADDRESS_1, 'add1']),
-      address2: JsonHelper.getValue<String>(json, [DBColumns.ADDRESS_2, 'add2']),
-      address3: JsonHelper.getValue<String>(json, [DBColumns.ADDRESS_3, 'add3']),
+      sbuCode: json[DBColumns.SBU_CODE] ?? '',
+      csCode: json[DBColumns.CS_CODE] ?? '',
+      csName: JsonHelper.getValue<String>(json, [DBColumns.CS_NAME, 'name'], defaultValue: '')!,
+      address1: JsonHelper.getValue<String>(json, [DBColumns.ADDRESS_1, 'add1'], defaultValue: '')!,
+      address2: JsonHelper.getValue<String>(json, [DBColumns.ADDRESS_2, 'add2'], defaultValue: '')!,
+      address3: JsonHelper.getValue<String>(json, [DBColumns.ADDRESS_3, 'add3'], defaultValue: '')!,
       city: json[DBColumns.CITY],
-      repId: json[DBColumns.REP_ID],
+      repId: json[DBColumns.REP_ID] ?? '',
       mobile: json[DBColumns.MOBILE],
       creditLimit: JsonHelper.getDouble(json, [DBColumns.CREDIT_LIMIT], defaultValue: 0)!,
       creditBalance: JsonHelper.getDouble(json, [DBColumns.CREDIT_BALANCE], defaultValue: 0)!,
-      createdBy: json[DBColumns.CREATED_BY],
-      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT]),
+      createdBy: json[DBColumns.CREATED_BY] ?? '',
+      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT], defaultValue: DateTime.fromMillisecondsSinceEpoch(0))!,
     );
   }
 
@@ -102,8 +102,27 @@ class CustomerModel {
       DBColumns.CREDIT_LIMIT: creditLimit,
       DBColumns.CREDIT_BALANCE: creditBalance,
       DBColumns.CREATED_BY: createdBy,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
+      DBColumns.CREATED_AT: createdAt.toIso8601String(),
     };
+  }
+
+  factory CustomerModel.defaults() {
+    return CustomerModel(
+      id: -1,
+      sbuCode: '',
+      csCode: '',
+      csName: '',
+      address1: null,
+      address2: null,
+      address3: null,
+      city: null,
+      repId: '',
+      mobile: null,
+      creditLimit: 0,
+      creditBalance: 0,
+      createdBy: '',
+      createdAt: DateTime.now(),
+    );
   }
 
   String get searchKey => "$csCode$csName";

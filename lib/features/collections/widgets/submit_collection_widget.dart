@@ -4,10 +4,13 @@ import 'package:locafy/locafy.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/styles/app_text_style.dart';
+import '../../../helpers/date_time_helper.dart';
+import '../../../helpers/number_helper.dart';
 import '../../../models/collection_model.dart';
 import '../../../models/credit_note_model.dart';
 import '../../../models/customer_model.dart';
 import '../../../models/invoice_model.dart';
+import '../../../services/database/db_constants.dart';
 import '../../../services/database/repositories/collection_db_repository.dart';
 import '../../../services/database/repositories/credit_note_db_repository.dart';
 import '../../../services/database/repositories/invoice_db_repository.dart';
@@ -16,6 +19,7 @@ import '../../../shared/components/app/app_scaffold.dart';
 import '../../../shared/components/button/app_button.dart';
 import '../../../shared/components/form/text_input_field.dart';
 import '../../../shared/components/list/model_list_view.dart';
+import '../../../shared/enum.dart';
 import '../../../shared/widgets/pay_mode_selection.dart';
 import '../../../utils/formatters/text_input_formatters.dart';
 import '../helpers/collection_ui_helper.dart';
@@ -104,12 +108,16 @@ class _SubmitCollectionWidgetState extends State<SubmitCollectionWidget> {
     unfocus();
 
     try {
-      if (await _confirmIncompleteSetOffs()) {
-        await _submitting();
-      }
+      final confirm = await _confirmIncompleteSetOffs();
 
-      if(_canPop && mounted){
-        Navigator.of(context).pop(_canPop);
+      if (!confirm) return;
+
+      final submitted = await _submitting();
+
+      if (!submitted) return;
+
+      if (mounted) {
+        Navigator.of(context).pop(true);
       }
     } finally {
       _isSubmitting = false;
@@ -132,7 +140,7 @@ class _SubmitCollectionWidgetState extends State<SubmitCollectionWidget> {
     return confirmed == true;
   }
 
-  Future<void> _submitting() async {
+  Future<bool> _submitting() async {
     final snackBar = AppSnackBar.instance;
     final loader = AppLoader.instance;
 
@@ -144,8 +152,14 @@ class _SubmitCollectionWidgetState extends State<SubmitCollectionWidget> {
       final currentUser = await IAMService.instance.currentUser();
 
       final header = CollectionHeaderModel(
+        sbuCode: currentUser.sbuCode ?? '',
+        locCode: currentUser.locCode ?? '',
+        docCode: DBConstants.DOC_RCPD,
+        docNo: NumberHelper.getSerialNumber(currentUser.tabCode),
+        txnDate: DateTimeHelper.getTxnDate(),
+        synSts: SyncStatus.PEND,
         csCode: widget.customer.csCode,
-        payMode: widget.paymentDetails.payMode,
+        payMode: widget.paymentDetails.payMode!,
         totalAmount: widget.receiptAmount,
         chqNo: widget.paymentDetails.chqNumber,
         chqDate: widget.paymentDetails.chqDate,
@@ -155,24 +169,34 @@ class _SubmitCollectionWidgetState extends State<SubmitCollectionWidget> {
         remark: _remarkController.text,
         gpsLat: position.latitude,
         gpsLng: position.longitude,
+        createdBy: currentUser.userId ?? '',
+        createdAt: DateTimeHelper.getDateTime(),
+        tabCode: currentUser.tabCode,
       );
 
       final details = setOffs
           .map(
             (e) => CollectionDetailModel(
-              seqNo: e.seq,
-              recDoc: e.recDoc,
-              recNo: e.recNo,
-              invDoc: e.invDoc,
-              invNo: e.invNo,
-              setOffAmount: e.setOffAmount.toDouble(),
-              discount: e.discount.toDouble(),
-            ),
-          )
+          sbuCode: header.sbuCode,
+          locCode: header.locCode,
+          docCode: header.docCode,
+          docNo: header.docNo,
+          seqNo: e.seq ?? -1,
+          recDoc: e.recDoc,
+          recNo: e.recNo,
+          invDoc: e.invDoc,
+          invNo: e.invNo,
+          setOffAmount: e.setOffAmount.toDouble(),
+          discount: e.discount.toDouble(),
+          txnDate: header.txnDate,
+          synSts: SyncStatus.PEND,
+          createdBy: header.createdBy,
+          createdAt: DateTimeHelper.getDateTime(),
+        ),
+      )
           .toList();
 
       final insertResult = await CollectionDbRepository.insertCollection(
-        currentUser,
         header,
         details,
       );
@@ -185,13 +209,14 @@ class _SubmitCollectionWidgetState extends State<SubmitCollectionWidget> {
         title: 'Payment Collection Submitted',
         message:
         'Payment collection was successfully submitted. '
-            'Document No: ${insertResult.header?.docNo}',
+            'Document No: ${insertResult.header.docNo}',
       );
 
-      _canPop = true;
+      return true;
     } catch (e) {
       snackBar.error(message: e.toString());
       debugPrint("ERROR: Collection Save: ${e.toString()}");
+      return false;
     } finally {
       loader.hide();
       if (mounted) setState(() {});

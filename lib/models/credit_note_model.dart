@@ -4,41 +4,41 @@ import '../shared/enum.dart';
 
 class CreditNoteModel {
   final dynamic id;
-  final String? sbuCode;
-  final String? locCode;
-  final String? locName;
-  final String? docCode;
-  final String? docNo;
-  final String? csCode;
-  final String? repId;
-  final String? txnDate;
+  final String sbuCode;
+  final String locCode;
+  final String locName;
+  final String docCode;
+  final String docNo;
+  final String csCode;
+  final String repId;
+  final String txnDate;
   final num dueAmount;
   final num originalAmount;
   final num balanceAmount;
   final num setOffAmount;
   final RowStatus rowSts;
   final SyncStatus synSts;
-  final String? createdBy;
-  final DateTime? createdAt;
+  final String createdBy;
+  final DateTime createdAt;
 
   const CreditNoteModel({
     this.id,
-    this.sbuCode,
-    this.locCode,
-    this.locName,
-    this.docCode,
-    this.docNo,
-    this.csCode,
-    this.repId,
-    this.txnDate,
+    required this.sbuCode,
+    required this.locCode,
+    required this.locName,
+    required this.docCode,
+    required this.docNo,
+    required this.csCode,
+    required this.repId,
+    required this.txnDate,
     this.dueAmount = 0,
     this.originalAmount = 0,
     this.balanceAmount = 0,
     this.setOffAmount = 0,
     this.rowSts = RowStatus.ENA,
     this.synSts = SyncStatus.NONE,
-    this.createdBy,
-    this.createdAt,
+    required this.createdBy,
+    required this.createdAt,
   });
 
   CreditNoteModel copyWith({
@@ -84,22 +84,22 @@ class CreditNoteModel {
   factory CreditNoteModel.fromJson(Map<String, dynamic> json) {
     return CreditNoteModel(
       id: json[DBColumns.ID],
-      sbuCode: json[DBColumns.SBU_CODE],
-      locCode: json[DBColumns.LOC_CODE],
-      locName: json[DBColumns.LOC_NAME],
-      docCode: json[DBColumns.DOC_CODE],
-      docNo: json[DBColumns.DOC_NO],
-      csCode: json[DBColumns.CS_CODE],
-      repId: json[DBColumns.REP_ID],
-      txnDate: json[DBColumns.TXN_DATE],
+      sbuCode: json[DBColumns.SBU_CODE] ?? '',
+      locCode: json[DBColumns.LOC_CODE] ?? '',
+      locName: json[DBColumns.LOC_NAME] ?? '',
+      docCode: json[DBColumns.DOC_CODE] ?? '',
+      docNo: json[DBColumns.DOC_NO] ?? '',
+      csCode: json[DBColumns.CS_CODE] ?? '',
+      repId: json[DBColumns.REP_ID] ?? '',
+      txnDate: json[DBColumns.TXN_DATE] ?? '',
       dueAmount: JsonHelper.getDouble(json, [DBColumns.DUE_AMOUNT], defaultValue: 0)!,
       originalAmount: JsonHelper.getDouble(json, [DBColumns.ORIGINAL_AMOUNT, DBColumns.DUE_AMOUNT], defaultValue: 0)!, /// Remove [DUE_AMOUNT] if api response has [ORIGINAL_AMOUNT] field in future
       balanceAmount: JsonHelper.getDouble(json, [DBColumns.BALANCE_AMOUNT], defaultValue: 0)!,
       setOffAmount: JsonHelper.getDouble(json, [DBColumns.SETOFF_AMOUNT], defaultValue: 0)!,
       rowSts: JsonHelper.getEnum<RowStatus>(json, [DBColumns.ROWSTS], RowStatus.values, defaultValue: .ENA)!,
       synSts: JsonHelper.getEnum<SyncStatus>(json, [DBColumns.SYNSTS], SyncStatus.values, defaultValue: .NONE)!,
-      createdBy: json[DBColumns.CREATED_BY],
-      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT]),
+      createdBy: json[DBColumns.CREATED_BY] ?? '',
+      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT], defaultValue: DateTime.fromMillisecondsSinceEpoch(0))!,
     );
   }
 
@@ -121,7 +121,7 @@ class CreditNoteModel {
       DBColumns.ROWSTS: rowSts.name,
       DBColumns.SYNSTS: synSts.name,
       DBColumns.CREATED_BY: createdBy,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
+      DBColumns.CREATED_AT: createdAt.toIso8601String(),
     };
   }
 

@@ -3,25 +3,25 @@ import '../services/database/db_columns.dart';
 
 class SystemFileModel {
   final dynamic id;
-  final String? sbuCode;
-  final String? locCode;
-  final String? userId;
-  final String? paraCode;
-  final String? paraName;
-  final String? comment;
-  final String? createdBy;
-  final DateTime? createdAt;
+  final String sbuCode;
+  final String locCode;
+  final String userId;
+  final String paraCode;
+  final String paraName;
+  final String comment;
+  final String createdBy;
+  final DateTime createdAt;
 
   const SystemFileModel({
     this.id,
-    this.sbuCode,
-    this.locCode,
-    this.userId,
-    this.paraCode,
-    this.paraName,
-    this.comment,
-    this.createdBy,
-    this.createdAt,
+    required this.sbuCode,
+    required this.locCode,
+    required this.userId,
+    required this.paraCode,
+    required this.paraName,
+    required this.comment,
+    required this.createdBy,
+    required this.createdAt,
   });
 
   SystemFileModel copyWith({
@@ -51,20 +51,20 @@ class SystemFileModel {
   factory SystemFileModel.fromJson(Map<String, dynamic> json) {
     return SystemFileModel(
       id: json[DBColumns.ID],
-      sbuCode: json[DBColumns.SBU_CODE],
-      locCode: json[DBColumns.LOC_CODE],
-      userId: JsonHelper.getValue<String>(json, [DBColumns.USER_ID, 'userid']),
+      sbuCode: json[DBColumns.SBU_CODE] ?? '',
+      locCode: json[DBColumns.LOC_CODE] ?? '',
+      userId: JsonHelper.getValue<String>(json, [DBColumns.USER_ID, 'userid'], defaultValue: '')!,
       paraCode: JsonHelper.getValue<String>(json, [
         DBColumns.PARA_CODE,
         'prgcod',
-      ]),
+      ], defaultValue: '')!,
       paraName: JsonHelper.getValue<String>(json, [
         DBColumns.PARA_NAME,
         'prgnam',
-      ]),
-      comment: JsonHelper.getValue<String>(json, [DBColumns.COMMENT, 'coment']),
-      createdBy: json[DBColumns.CREATED_BY],
-      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT]),
+      ], defaultValue: '')!,
+      comment: JsonHelper.getValue<String>(json, [DBColumns.COMMENT, 'coment'], defaultValue: '')!,
+      createdBy: json[DBColumns.CREATED_BY] ?? '',
+      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT], defaultValue: DateTime.fromMillisecondsSinceEpoch(0))!,
     );
   }
 
@@ -78,7 +78,7 @@ class SystemFileModel {
       DBColumns.PARA_NAME: paraName,
       DBColumns.COMMENT: comment,
       DBColumns.CREATED_BY: createdBy,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
+      DBColumns.CREATED_AT: createdAt.toIso8601String(),
     };
   }
 }

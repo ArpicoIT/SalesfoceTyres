@@ -15,52 +15,22 @@ class CollectionDbRepository {
   CollectionDbRepository._();
 
   static Future<CollectionModel> insertCollection(
-    UserModel currentUser,
     CollectionHeaderModel header,
     List<CollectionDetailModel> details,
   ) async {
     /// Insert header
-    header = header.copyWith(
-      sbuCode: currentUser.sbuCode,
-      locCode: currentUser.locCode,
-      docCode: DBConstants.DOC_RCPD,
-      docNo: NumberHelper.getSerialNumber(currentUser.tabCode),
-      txnDate: DateTimeHelper.getTxnDate(),
-      synSts: SyncStatus.PEND,
-      tabCode: currentUser.tabCode,
-      createdBy: currentUser.userId,
-      createdAt: DateTimeHelper.getDateTime(),
-    );
-
-    final id = await DBHelper.insert(
+    await DBHelper.insert(
       DBTables.COLLECTION_HEADERS,
       header.toSqlJson(),
     );
 
-    header = header.copyWith(id: id);
-
     /// Insert details
-    List<CollectionDetailModel> updatedDetails = details
-        .map(
-          (e) => e.copyWith(
-            sbuCode: header.sbuCode,
-            locCode: header.locCode,
-            docCode: header.docCode,
-            docNo: header.docNo,
-            txnDate: header.txnDate,
-            synSts: SyncStatus.PEND,
-            createdBy: header.createdBy,
-            createdAt: DateTimeHelper.getDateTime(),
-          ),
-        )
-        .toList();
-
     await DBHelper.batchInsert(
       DBTables.COLLECTION_DETAILS,
-      updatedDetails.map((e) => e.toSqlJson()).toList(),
+      details.map((e) => e.toSqlJson()).toList(),
     );
 
-    return CollectionModel(header: header, details: updatedDetails);
+    return CollectionModel(header: header, details: details);
   }
 
   static Future<List<CollectionHeaderModel>> getTodayCollections(

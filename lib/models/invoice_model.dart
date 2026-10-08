@@ -13,14 +13,14 @@ enum InvoiceCategory {
 
 class InvoiceModel {
   final dynamic id;
-  final String? sbuCode;
-  final String? locCode;
-  final String? locName;
-  final String? docCode;
-  final String? docNo;
-  final String? csCode;
-  final String? repId;
-  final String? txnDate;
+  final String sbuCode;
+  final String locCode;
+  final String locName;
+  final String docCode;
+  final String docNo;
+  final String csCode;
+  final String repId;
+  final String txnDate;
   final num dueAmount;
   final num originalAmount;
   final num balanceAmount;
@@ -29,12 +29,12 @@ class InvoiceModel {
   final num bulkDiscount;
   final RowStatus rowSts;
   final SyncStatus synSts;
-  final String? createdBy;
-  final DateTime? createdAt;
+  final String createdBy;
+  final DateTime createdAt;
 
   /// Runtime Fields
-  final num cashDiscountAmount;
-  final num bulkDiscountAmount;
+  // final num cashDiscountAmount;
+  // final num bulkDiscountAmount;
 
   final num currentCashDiscount;
   final num currentCashDiscountAmount;
@@ -45,14 +45,14 @@ class InvoiceModel {
 
   const InvoiceModel({
     this.id,
-    this.sbuCode,
-    this.locCode,
-    this.locName,
-    this.docCode,
-    this.docNo,
-    this.csCode,
-    this.repId,
-    this.txnDate,
+    required this.sbuCode,
+    required this.locCode,
+    required this.locName,
+    required this.docCode,
+    required this.docNo,
+    required this.csCode,
+    required this.repId,
+    required this.txnDate,
     this.dueAmount = 0,
     this.originalAmount = 0,
     this.balanceAmount = 0,
@@ -61,11 +61,11 @@ class InvoiceModel {
     this.bulkDiscount = 0,
     this.rowSts = RowStatus.LCK,
     this.synSts = SyncStatus.NONE,
-    this.createdBy,
-    this.createdAt,
+    required this.createdBy,
+    required this.createdAt,
 
-    this.cashDiscountAmount = 0,
-    this.bulkDiscountAmount = 0,
+    // this.cashDiscountAmount = 0,
+    // this.bulkDiscountAmount = 0,
 
     this.currentCashDiscount = 0,
     this.currentCashDiscountAmount = 0,
@@ -138,14 +138,14 @@ class InvoiceModel {
   factory InvoiceModel.fromJson(Map<String, dynamic> json) {
     return InvoiceModel(
       id: json[DBColumns.ID],
-      sbuCode: json[DBColumns.SBU_CODE],
-      locCode: json[DBColumns.LOC_CODE],
-      locName: json[DBColumns.LOC_NAME],
-      docCode: json[DBColumns.DOC_CODE],
-      docNo: json[DBColumns.DOC_NO],
-      csCode: json[DBColumns.CS_CODE],
-      repId: json[DBColumns.REP_ID],
-      txnDate: json[DBColumns.TXN_DATE],
+      sbuCode: json[DBColumns.SBU_CODE] ?? '',
+      locCode: json[DBColumns.LOC_CODE] ?? '',
+      locName: json[DBColumns.LOC_NAME] ?? '',
+      docCode: json[DBColumns.DOC_CODE] ?? '',
+      docNo: json[DBColumns.DOC_NO] ?? '',
+      csCode: json[DBColumns.CS_CODE] ?? '',
+      repId: json[DBColumns.REP_ID] ?? '',
+      txnDate: json[DBColumns.TXN_DATE] ?? '',
       dueAmount: JsonHelper.getDouble(json, [
         DBColumns.DUE_AMOUNT,
       ], defaultValue: 0)!,
@@ -176,8 +176,8 @@ class InvoiceModel {
         SyncStatus.values,
         defaultValue: .NONE,
       )!,
-      createdBy: json[DBColumns.CREATED_BY],
-      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT]),
+      createdBy: json[DBColumns.CREATED_BY] ?? '',
+      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT], defaultValue: DateTime.fromMillisecondsSinceEpoch(0))!,
     );
   }
 
@@ -201,7 +201,7 @@ class InvoiceModel {
       DBColumns.ROWSTS: rowSts.name,
       DBColumns.SYNSTS: synSts.name,
       DBColumns.CREATED_BY: createdBy,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
+      DBColumns.CREATED_AT: createdAt.toIso8601String(),
     };
   }
 
@@ -210,5 +210,16 @@ class InvoiceModel {
       '$docCode$docNo$originalAmount$dueAmount$balanceAmount$setOffAmount';
 
   /// Default factory
-  factory InvoiceModel.defaults() => InvoiceModel();
+  factory InvoiceModel.defaults() => InvoiceModel(
+    sbuCode: '',
+    locCode: '',
+    locName: '',
+    docCode: '',
+    docNo: '',
+    csCode: '',
+    repId: '',
+    txnDate: '',
+    createdBy: '',
+    createdAt: DateTime.now(),
+  );
 }

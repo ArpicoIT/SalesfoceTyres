@@ -4,10 +4,10 @@ import '../shared/enum.dart';
 import '../shared/widgets/pay_mode_selection.dart';
 
 class CollectionModel {
-  final CollectionHeaderModel? header;
-  final List<CollectionDetailModel>? details;
+  final CollectionHeaderModel header;
+  final List<CollectionDetailModel> details;
 
-  const CollectionModel({this.header, this.details});
+  const CollectionModel({required this.header, required this.details});
 
   CollectionModel copyWith({
     CollectionHeaderModel? header,
@@ -18,42 +18,17 @@ class CollectionModel {
       details: details ?? this.details,
     );
   }
-
-  factory CollectionModel.fromJson(Map<String, dynamic> json) {
-    return CollectionModel(
-      header: json[DBColumns.HEADER] != null
-          ? CollectionHeaderModel.fromJson(
-              json[DBColumns.HEADER] as Map<String, dynamic>,
-            )
-          : null,
-      details: json[DBColumns.DETAILS] != null && (json[DBColumns.DETAILS] is List)
-          ? (json[DBColumns.DETAILS] as List)
-                .map(
-                  (e) =>
-                      CollectionDetailModel.fromJson(e as Map<String, dynamic>),
-                )
-                .toList()
-          : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      DBColumns.HEADER: header?.toJson(),
-      DBColumns.DETAILS: details?.map((e) => e.toJson()).toList(),
-    };
-  }
 }
 
 class CollectionHeaderModel {
   final dynamic id;
-  final String? sbuCode;
-  final String? locCode;
-  final String? docCode;
-  final String? docNo;
-  final String? csCode;
-  final PayMode? payMode;
-  final String? txnDate;
+  final String sbuCode;
+  final String locCode;
+  final String docCode;
+  final String docNo;
+  final String csCode;
+  final PayMode payMode;
+  final String txnDate;
   final num totalAmount;
   final String? chqNo;
   final String? chqDate;
@@ -64,21 +39,21 @@ class CollectionHeaderModel {
   final num? gpsLat;
   final num? gpsLng;
   final SyncStatus synSts;
-  final String? createdBy;
-  final DateTime? createdAt;
+  final String createdBy;
+  final DateTime createdAt;
   final bool verified;
   final bool deposited;
   final String? tabCode;
 
   const CollectionHeaderModel({
     this.id,
-    this.sbuCode,
-    this.locCode,
-    this.docCode,
-    this.docNo,
-    this.csCode,
-    this.payMode,
-    this.txnDate,
+    required this.sbuCode,
+    required this.locCode,
+    required this.docCode,
+    required this.docNo,
+    required this.csCode,
+    required this.payMode,
+    required this.txnDate,
     this.totalAmount = 0.0,
     this.chqNo,
     this.chqDate,
@@ -89,8 +64,8 @@ class CollectionHeaderModel {
     this.gpsLat,
     this.gpsLng,
     this.synSts = SyncStatus.NONE,
-    this.createdBy,
-    this.createdAt,
+    required this.createdBy,
+    required this.createdAt,
     this.verified = false,
     this.deposited = false,
     this.tabCode,
@@ -151,13 +126,13 @@ class CollectionHeaderModel {
   factory CollectionHeaderModel.fromJson(Map<String, dynamic> json) {
     return CollectionHeaderModel(
       id: json[DBColumns.ID],
-      sbuCode: json[DBColumns.SBU_CODE],
-      locCode: json[DBColumns.LOC_CODE],
-      docCode: json[DBColumns.DOC_CODE],
-      docNo: json[DBColumns.DOC_NO],
-      csCode: json[DBColumns.CS_CODE],
-      payMode: JsonHelper.getEnum<PayMode>(json, [DBColumns.PAY_MODE], PayMode.values, matcher: (e, v) => e.value == v),
-      txnDate: json[DBColumns.TXN_DATE],
+      sbuCode: json[DBColumns.SBU_CODE] ?? '',
+      locCode: json[DBColumns.LOC_CODE] ?? '',
+      docCode: json[DBColumns.DOC_CODE] ?? '',
+      docNo: json[DBColumns.DOC_NO] ?? '',
+      csCode: json[DBColumns.CS_CODE] ?? '',
+      payMode: JsonHelper.getEnum<PayMode>(json, [DBColumns.PAY_MODE], PayMode.values, matcher: (e, v) => e.value == v, defaultValue: PayMode.none)!,
+      txnDate: json[DBColumns.TXN_DATE] ?? '',
       totalAmount: JsonHelper.getDouble(json, [DBColumns.TOTAL_AMOUNT], defaultValue: 0)!,
       chqNo: json[DBColumns.CHQ_NO],
       chqDate: json[DBColumns.CHQ_DATE],
@@ -168,8 +143,8 @@ class CollectionHeaderModel {
       gpsLat: JsonHelper.getDouble(json, [DBColumns.GPS_LAT]),
       gpsLng: JsonHelper.getDouble(json, [DBColumns.GPS_LNG]),
       synSts: JsonHelper.getEnum<SyncStatus>(json, [DBColumns.SYNSTS], SyncStatus.values, defaultValue: .NONE)!,
-      createdBy: json[DBColumns.CREATED_BY],
-      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT]),
+      createdBy: json[DBColumns.CREATED_BY] ?? '',
+      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT], defaultValue: DateTime.fromMillisecondsSinceEpoch(0))!,
       verified: JsonHelper.getBool(json, [DBColumns.VERIFIED], defaultValue: false)!,
       deposited: JsonHelper.getBool(json, [DBColumns.DEPOSITED], defaultValue: false)!,
       tabCode: json[DBColumns.TAB_CODE],
@@ -184,7 +159,7 @@ class CollectionHeaderModel {
       DBColumns.DOC_CODE: docCode,
       DBColumns.DOC_NO: docNo,
       DBColumns.CS_CODE: csCode,
-      DBColumns.PAY_MODE: payMode?.value,
+      DBColumns.PAY_MODE: payMode.value,
       DBColumns.TXN_DATE: txnDate,
       DBColumns.TOTAL_AMOUNT: totalAmount,
       DBColumns.CHQ_NO: chqNo,
@@ -197,7 +172,7 @@ class CollectionHeaderModel {
       DBColumns.GPS_LNG: gpsLng,
       DBColumns.SYNSTS: synSts.name,
       DBColumns.CREATED_BY: createdBy,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
+      DBColumns.CREATED_AT: createdAt.toIso8601String(),
       DBColumns.VERIFIED: verified,
       DBColumns.DEPOSITED: deposited,
       DBColumns.TAB_CODE: tabCode,
@@ -211,7 +186,7 @@ class CollectionHeaderModel {
       DBColumns.DOC_CODE: docCode,
       DBColumns.DOC_NO: docNo,
       DBColumns.CS_CODE: csCode,
-      DBColumns.PAY_MODE: payMode?.value,
+      DBColumns.PAY_MODE: payMode.value,
       DBColumns.TXN_DATE: txnDate,
       DBColumns.TOTAL_AMOUNT: totalAmount,
       DBColumns.CHQ_NO: chqNo,
@@ -224,7 +199,7 @@ class CollectionHeaderModel {
       DBColumns.GPS_LNG: gpsLng,
       DBColumns.SYNSTS: synSts.name,
       DBColumns.CREATED_BY: createdBy,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
+      DBColumns.CREATED_AT: createdAt.toIso8601String(),
       DBColumns.DEPOSITED: deposited ? 1 : 0,
       DBColumns.TAB_CODE: tabCode,
     };
@@ -237,7 +212,7 @@ class CollectionHeaderModel {
       DBColumns.DOC_CODE: docCode,
       DBColumns.DOC_NO: docNo,
       DBColumns.CS_CODE: csCode,
-      DBColumns.PAY_MODE: payMode?.value,
+      DBColumns.PAY_MODE: payMode.value,
       DBColumns.TXN_DATE: txnDate,
       DBColumns.TOTAL_AMOUNT: totalAmount,
       DBColumns.CHQ_NO: chqNo,
@@ -253,47 +228,47 @@ class CollectionHeaderModel {
       DBColumns.DEPOSITED: deposited,
       'tb_code': tabCode,
       'creaby': createdBy,
-      'creadt': createdAt?.toIso8601String(),
+      'creadt': createdAt.toIso8601String(),
     };
   }
 }
 
 class CollectionDetailModel {
   final dynamic id;
-  final String? sbuCode;
-  final String? locCode;
-  final String? docCode;
-  final String? docNo;
-  final int? seqNo;
-  final String? recDoc;
-  final String? recNo;
-  final String? invDoc;
-  final String? invNo;
-  final num? setOffAmount;
-  final num? discount;
-  final String? txnDate;
+  final String sbuCode;
+  final String locCode;
+  final String docCode;
+  final String docNo;
+  final int seqNo;
+  final String recDoc;
+  final String recNo;
+  final String invDoc;
+  final String invNo;
+  final num setOffAmount;
+  final num discount;
+  final String txnDate;
   final SyncStatus synSts;
-  final String? createdBy;
-  final DateTime? createdAt;
+  final String createdBy;
+  final DateTime createdAt;
   final bool verified;
 
   const CollectionDetailModel({
     this.id,
-    this.sbuCode,
-    this.locCode,
-    this.docCode,
-    this.docNo,
-    this.seqNo,
-    this.recDoc,
-    this.recNo,
-    this.invDoc,
-    this.invNo,
-    this.setOffAmount,
-    this.discount,
-    this.txnDate,
+    required this.sbuCode,
+    required this.locCode,
+    required this.docCode,
+    required this.docNo,
+    required this.seqNo,
+    required this.recDoc,
+    required this.recNo,
+    required this.invDoc,
+    required this.invNo,
+    required this.setOffAmount,
+    required this.discount,
+    required this.txnDate,
     this.synSts = SyncStatus.NONE,
-    this.createdBy,
-    this.createdAt,
+    required this.createdBy,
+    required this.createdAt,
     this.verified = false,
   });
 
@@ -340,21 +315,21 @@ class CollectionDetailModel {
   factory CollectionDetailModel.fromJson(Map<String, dynamic> json) {
     return CollectionDetailModel(
       id: json[DBColumns.ID],
-      sbuCode: json[DBColumns.SBU_CODE],
-      locCode: json[DBColumns.LOC_CODE],
-      docCode: json[DBColumns.DOC_CODE],
-      docNo: json[DBColumns.DOC_NO],
-      seqNo: json[DBColumns.SEQ_NO],
-      recDoc: json[DBColumns.REC_DOC],
-      recNo: json[DBColumns.REC_NO],
-      invDoc: json[DBColumns.INV_DOC],
-      invNo: json[DBColumns.INV_NO],
-      setOffAmount: JsonHelper.getDouble(json, [DBColumns.SETOFF_AMOUNT], defaultValue: 0),
-      discount: JsonHelper.getDouble(json, [DBColumns.DISCOUNT], defaultValue: 0),
-      txnDate: json[DBColumns.TXN_DATE],
+      sbuCode: json[DBColumns.SBU_CODE] ?? '',
+      locCode: json[DBColumns.LOC_CODE] ?? '',
+      docCode: json[DBColumns.DOC_CODE] ?? '',
+      docNo: json[DBColumns.DOC_NO] ?? '',
+      seqNo: json[DBColumns.SEQ_NO] ?? -1,
+      recDoc: json[DBColumns.REC_DOC] ?? '',
+      recNo: json[DBColumns.REC_NO] ?? '',
+      invDoc: json[DBColumns.INV_DOC] ?? '',
+      invNo: json[DBColumns.INV_NO] ?? '',
+      setOffAmount: JsonHelper.getDouble(json, [DBColumns.SETOFF_AMOUNT], defaultValue: 0)!,
+      discount: JsonHelper.getDouble(json, [DBColumns.DISCOUNT], defaultValue: 0)!,
+      txnDate: json[DBColumns.TXN_DATE] ?? '',
       synSts: JsonHelper.getEnum<SyncStatus>(json, [DBColumns.SYNSTS], SyncStatus.values, defaultValue: .NONE)!,
-      createdBy: json[DBColumns.CREATED_BY],
-      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT]),
+      createdBy: json[DBColumns.CREATED_BY] ?? '',
+      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT], defaultValue: DateTime.fromMillisecondsSinceEpoch(0))!,
       verified: JsonHelper.getBool(json, [DBColumns.VERIFIED], defaultValue: false)!,
     );
   }
@@ -376,7 +351,7 @@ class CollectionDetailModel {
       DBColumns.TXN_DATE: txnDate,
       DBColumns.SYNSTS: synSts.name,
       DBColumns.CREATED_BY: createdBy,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
+      DBColumns.CREATED_AT: createdAt.toIso8601String(),
     };
   }
 
@@ -396,7 +371,7 @@ class CollectionDetailModel {
       DBColumns.TXN_DATE: txnDate,
       DBColumns.SYNSTS: synSts.name,
       DBColumns.CREATED_BY: createdBy,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
+      DBColumns.CREATED_AT: createdAt.toIso8601String(),
     };
   }
 
@@ -417,7 +392,7 @@ class CollectionDetailModel {
       DBColumns.SYNSTS: synSts.name,
       DBColumns.VERIFIED: verified,
       'creaby': createdBy,
-      'creadt': createdAt?.toIso8601String(),
+      'creadt': createdAt.toIso8601String(),
     };
   }
 }
@@ -431,7 +406,7 @@ class CollectionSetOffModel {
   final String invNo;
   final num setOffAmount;
   final num discount;
-  final DateTime? createdAt;
+  final DateTime createdAt;
 
   CollectionSetOffModel({
     this.seq,
@@ -442,7 +417,7 @@ class CollectionSetOffModel {
     required this.invNo,
     required this.setOffAmount,
     this.discount = 0,
-    this.createdAt,
+    required this.createdAt,
   });
 
   CollectionSetOffModel copyWith({
@@ -467,34 +442,6 @@ class CollectionSetOffModel {
       discount: discount ?? this.discount,
       createdAt: createdAt ?? this.createdAt,
     );
-  }
-
-  factory CollectionSetOffModel.fromJson(Map<String, dynamic> json) {
-    return CollectionSetOffModel(
-      seq: json[DBColumns.SEQ_NO],
-      recType: json[DBColumns.REC_TYPE],
-      recDoc: json[DBColumns.REC_DOC],
-      recNo: json[DBColumns.REC_NO],
-      invDoc: json[DBColumns.INV_DOC],
-      invNo: json[DBColumns.INV_NO],
-      setOffAmount: JsonHelper.getDouble(json, [DBColumns.SETOFF_AMOUNT], defaultValue: 0)!,
-      discount: JsonHelper.getDouble(json, [DBColumns.DISCOUNT], defaultValue: 0)!,
-      createdAt: JsonHelper.getDateTime(json, [DBColumns.CREATED_AT]),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      DBColumns.SEQ_NO: seq,
-      DBColumns.REC_TYPE: recType,
-      DBColumns.REC_DOC: recDoc,
-      DBColumns.REC_NO: recNo,
-      DBColumns.INV_DOC: invDoc,
-      DBColumns.INV_NO: invNo,
-      DBColumns.SETOFF_AMOUNT: setOffAmount,
-      DBColumns.DISCOUNT: discount,
-      DBColumns.CREATED_AT: createdAt?.toIso8601String(),
-    };
   }
 
   String get searchKey =>

@@ -21,8 +21,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v2.0.0"
-      resolved-ref: "5c32b1e57347cdffe20e04b1a576523b9c4c4b4c"
+      ref: "v2.0.1"
+      resolved-ref: "3850bd7aff4dad5267652694d5403effcb2022a7"
       url: "https://github.com/ArpicoIT/arpicoiam.git"
     source: git
     version: "2.0.0+1"
