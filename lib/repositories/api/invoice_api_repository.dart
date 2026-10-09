@@ -53,7 +53,12 @@ class InvoiceApiRepository {
 
   static Future<ApiResponse<Map<String, dynamic>>> checkApprovalState(String docNo) async {
     try {
-      final dio = ApiManager.client.dio;
+      // final dio = ApiManager.client.dio;
+
+      ApiManager.custom.initialize(
+        BaseOptions(baseUrl: 'https://services.arpicotyres.com/services'),
+      );
+      final dio = ApiManager.custom.dio;
 
       final res = await dio.get(
         ApiPaths.invoiceApproval,

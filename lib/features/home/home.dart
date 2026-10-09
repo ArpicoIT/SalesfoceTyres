@@ -327,7 +327,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver, RouteA
         Expanded(
           child: _buildStatCard(
             icon: Icons.attach_money,
-            title: 'Collections',
+            title: 'Today Collections',
             value: _todayCollections.toString(),
             subtitle: NumberHelper.formatCurrency(_todayCollectionAmount),
             color: Colors.green,
@@ -337,7 +337,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver, RouteA
         Expanded(
           child: _buildStatCard(
             icon: Icons.location_on,
-            title: 'Visits',
+            title: 'Today Visits',
             value: _todayVisits.toString(),
             subtitle: 'Today',
             color: Colors.blue,
