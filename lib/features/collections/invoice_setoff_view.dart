@@ -387,7 +387,7 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
       /// 2. check customer has credit notes
       final bool hasCreditNotes =
           await CreditNoteDbRepository.hasCreditNotesForCustomer(
-            customer!.csCode,
+            customer.csCode,
           );
 
       if (!context.mounted) return;
@@ -455,7 +455,7 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
 
             final res = await InvoiceApiRepository.requestApproval(
               currentUser,
-              customer: customer!,
+              customer: customer,
               invoice: invoice,
             );
 
@@ -734,14 +734,14 @@ class _InvoiceSetOffViewState extends State<InvoiceSetOffView> {
         docNo: NumberHelper.getSerialNumber(currentUser.tabCode),
         txnDate: DateTimeHelper.getTxnDate(),
         synSts: SyncStatus.PEND,
-        csCode: customer!.csCode,
-        payMode: paymentDetails!.payMode!,
+        csCode: customer.csCode,
+        payMode: paymentDetails.payMode!,
         totalAmount: receiptAmount,
-        chqNo: paymentDetails!.chqNumber,
-        chqDate: paymentDetails!.chqDate,
-        bankCode: paymentDetails!.bank?.bankCode,
-        branchCode: paymentDetails!.branch?.branchCode,
-        ddRefNo: paymentDetails!.ddRefNumber,
+        chqNo: paymentDetails.chqNumber,
+        chqDate: paymentDetails.chqDate,
+        bankCode: paymentDetails.bank?.bankCode,
+        branchCode: paymentDetails.branch?.branchCode,
+        ddRefNo: paymentDetails.ddRefNumber,
         remark: _remarkController.text,
         gpsLat: position.latitude,
         gpsLng: position.longitude,

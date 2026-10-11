@@ -1,7 +1,6 @@
 import 'package:arpicoiam/iam.dart';
 import 'package:flutter/material.dart';
 
-import '../../app/exceptions/app_exception.dart';
 import '../../app/route_paths.dart';
 import '../../helpers/list_helper.dart';
 import '../../helpers/number_helper.dart';
@@ -23,8 +22,6 @@ import '../../shared/components/form/banking_amount_field.dart';
 import '../../shared/components/form/responsive_form_field.dart';
 import '../../shared/widgets/pay_mode_selection.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class Receipt1 extends StatefulWidget {
   const Receipt1({super.key});
@@ -117,14 +114,10 @@ class _CollectionsViewNewState extends State<Receipt1> {
       // loader.show();
       final currentUser = await IAMService.instance.currentUser();
 
-      if (customer.csCode == null) {
-        throw AppException.validationCustomerNotSelected();
-      }
-
       List<InvoiceModel> dataSource =
       await InvoiceDbRepository.getCustomerInvoicesWithJoinedDiscounts(
         currentUser,
-        csCode: customer.csCode!,
+        csCode: customer.csCode,
       );
 
       ListHelper.transformAll<InvoiceModel>(
@@ -161,14 +154,10 @@ class _CollectionsViewNewState extends State<Receipt1> {
       // loader.show();
       final currentUser = await IAMService.instance.currentUser();
 
-      if (customer.csCode == null) {
-        throw AppException.validationCustomerNotSelected();
-      }
-
       List<CreditNoteModel> dataSource =
       await CreditNoteDbRepository.getCustomerCreditNotes(
         currentUser,
-        csCode: customer.csCode!,
+        csCode: customer.csCode,
       );
 
       ListHelper.transformAll<CreditNoteModel>(
@@ -300,7 +289,7 @@ class _CollectionsViewNewState extends State<Receipt1> {
   Future<bool> _validateDuplicateCash() async {
     final duplicates =
     await CollectionDbRepository.getDuplicateCashCollections(
-      csCode: _selectedCustomer!.csCode!,
+      csCode: _selectedCustomer!.csCode,
       amount: receiptAmount,
     );
 

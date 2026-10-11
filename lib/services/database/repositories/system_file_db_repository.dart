@@ -48,7 +48,7 @@ class SystemFileDbRepository {
 
     final value = result.comment;
 
-    if (value == null || value.trim().isEmpty) {
+    if (value.trim().isEmpty) {
       return [];
     }
 
@@ -72,7 +72,7 @@ class SystemFileDbRepository {
 
     final value = result.comment;
 
-    if (value == null || value.trim().isEmpty) {
+    if (value.trim().isEmpty) {
       return [];
     }
 
@@ -96,7 +96,7 @@ class SystemFileDbRepository {
 
     final value = result.comment;
 
-    if (value == null || value.trim().isEmpty) {
+    if (value.trim().isEmpty) {
       return null;
     }
 

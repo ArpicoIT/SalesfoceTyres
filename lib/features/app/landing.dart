@@ -18,7 +18,7 @@ class _LandingViewState extends State<LandingView> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       Future.delayed(const Duration(seconds: 2), () {
         if (!mounted) return;
-        Navigator.of(context).pushNamedAndRemoveUntil(RoutePaths.home, (route) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil(RoutePaths.dashboard, (route) => false);
       });
     });
     super.initState();

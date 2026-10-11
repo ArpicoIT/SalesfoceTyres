@@ -310,12 +310,12 @@ class _CollectionInquiryViewState extends State<CollectionInquiryView> {
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final r = _headers[index];
-            final docNo = r.docNo?.toString() ?? '';
+            final docNo = r.docNo.toString() ?? '';
             final csCode =
-                _selectedCustomer?.csCode?.toString() ?? r.csCode ?? '';
-            final csName = _selectedCustomer?.csName?.toString() ?? '';
-            final txnDate = r.txnDate?.toString() ?? '';
-            final payMode = r.payMode?.label.toString() ?? '';
+                _selectedCustomer?.csCode.toString() ?? r.csCode ?? '';
+            final csName = _selectedCustomer?.csName.toString() ?? '';
+            final txnDate = r.txnDate.toString() ?? '';
+            final payMode = r.payMode.label.toString() ?? '';
             final total = (r.totalAmount as num?) ?? 0;
 
             return Card(
@@ -500,7 +500,7 @@ class _CollectionDetailsState extends State<CollectionDetails> {
           _buildInfoRow(
             Icons.payments_rounded,
             'Payment Mode',
-            _header.payMode?.label ?? 'N/A',
+            _header.payMode.label ?? 'N/A',
           ),
           _buildInfoRow(
             Icons.payments_outlined,
@@ -549,12 +549,12 @@ class _CollectionDetailsState extends State<CollectionDetails> {
           physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (ctx, idx) {
             final d = _details[idx];
-            final recDoc = d.recDoc?.toString() ?? '';
-            final recNo = d.recNo?.toString() ?? '';
-            final invDoc = d.invDoc?.toString() ?? '';
-            final invNo = d.invNo?.toString() ?? '';
+            final recDoc = d.recDoc.toString() ?? '';
+            final recNo = d.recNo.toString() ?? '';
+            final invDoc = d.invDoc.toString() ?? '';
+            final invNo = d.invNo.toString() ?? '';
             final setOffAmount = d.setOffAmount ?? 0;
-            final txnDate = d.txnDate?.toString() ?? '';
+            final txnDate = d.txnDate.toString() ?? '';
 
             // final int seqNo = d.seqNo ?? 0;
             // final docCode = d.docCode?.toString() ?? '';

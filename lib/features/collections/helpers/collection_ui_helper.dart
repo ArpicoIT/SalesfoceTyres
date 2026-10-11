@@ -390,7 +390,7 @@ class CollectionUiHelper {
     final amount = NumberHelper.formatCurrency(setOff.setOffAmount.abs());
 
     final createdAt = setOff.createdAt;
-    final timeText = createdAt != null ? DateFormat('hh:mm a').format(createdAt) : '-';
+    final timeText = DateFormat('hh:mm a').format(createdAt);
 
     final lightColor = color.withValues(alpha: 0.14);
     final borderColor = selected
@@ -1477,7 +1477,7 @@ class CollectionUiHelper {
       spacing: 8,
       children: [
         summaryTextRow('Invoice Number', '${invoice.docCode}${invoice.docNo}'),
-        summaryTextRow('Transaction Date', '${invoice.txnDate}'),
+        summaryTextRow('Transaction Date', invoice.txnDate),
         if (invoice.cashDiscount > 0 && showDiscount)
           summaryTextRow(
             'Discount',
