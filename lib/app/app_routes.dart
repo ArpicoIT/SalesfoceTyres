@@ -1,7 +1,9 @@
 import 'package:arpicoiam/iam.dart';
+import 'package:salesforcetyres/features/dashboard/presentation/views/dashboard_view.dart';
 import '../app/route_paths.dart';
 
 import '../features/app/landing.dart';
+import '../features/collections/presentation/views/receive_payment_view.dart';
 import '../features/collections/start_collection.dart';
 import '../features/collections/invoice_setoff_view.dart';
 import '../features/home/home.dart';
@@ -36,6 +38,11 @@ class AppRoutes {
     ),
     IAMRoute(
       protected: true,
+      path: RoutePaths.dashboard,
+      builder: (context, params) => const DashboardView(),
+    ),
+    IAMRoute(
+      protected: true,
       path: RoutePaths.downloads,
       builder: (context, params) => const DownloadsView(),
     ),
@@ -53,6 +60,11 @@ class AppRoutes {
       protected: false,
       path: RoutePaths.startCollection,
       builder: (context, params) => const StartCollection(),
+    ),
+    IAMRoute(
+      protected: false,
+      path: RoutePaths.receivePayment,
+      builder: (context, params) => const ReceivePaymentView(),
     ),
     IAMRoute(
       protected: false,

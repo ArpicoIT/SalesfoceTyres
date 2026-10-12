@@ -7,12 +7,14 @@ class RoutePaths {
 
   static const String landing = '$base/landing';
   static const String home = '$base/home';
+  static const String dashboard = '$base/dashboard';
 
   static const String downloads = '$base/downloads';
   static const String sync = '$base/sync-data';
   static const String backupRestore = '$base/backup-restore';
   static const String collections = '$base/collections';
   static const String startCollection = '$base/start-collection';
+  static const String receivePayment = '$base/receive-payment';
   static const String receiptSetOff = '$base/start-collection/receipt-setoff';
   static const String bankDeposits = '$base/bank-deposits';
   static const String visitLocations = '$base/visit-locations';
@@ -27,5 +29,4 @@ class RoutePaths {
   static const String contactSupport = '$base/contact-support';
   static const String aboutUs = '$base/about-us';
 
-  static const String dashboard = '$base/dashboard';
 }

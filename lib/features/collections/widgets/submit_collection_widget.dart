@@ -64,7 +64,7 @@ class _SubmitCollectionWidgetState extends State<SubmitCollectionWidget> {
 
   /// variables
   bool _isSubmitting = false;
-  bool _canPop = false;
+  final bool _canPop = false;
 
   /// Getters
   List<CollectionSetOffModel> get setOffs => notifier.setOffs;

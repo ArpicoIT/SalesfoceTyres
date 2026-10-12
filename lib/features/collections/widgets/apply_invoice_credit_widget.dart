@@ -165,10 +165,10 @@ class _ApplyInvoiceCreditWidgetState extends State<ApplyInvoiceCreditWidget> {
         notifier.addSetOff(
           CollectionSetOffModel(
             recType: DBConstants.DOC_CREDIT_NOTE,
-            recDoc: creditNote.docCode!,
-            recNo: creditNote.docNo!,
-            invDoc: currentInvoice.docCode!,
-            invNo: currentInvoice.docNo!,
+            recDoc: creditNote.docCode,
+            recNo: creditNote.docNo,
+            invDoc: currentInvoice.docCode,
+            invNo: currentInvoice.docNo,
             setOffAmount: finalSetOffAmount,
             createdAt: DateTime.now(),
           ),
@@ -213,10 +213,10 @@ class _ApplyInvoiceCreditWidgetState extends State<ApplyInvoiceCreditWidget> {
         notifier.addSetOff(
           CollectionSetOffModel(
             recType: DBConstants.DOC_CREDIT_NOTE,
-            recDoc: creditNote.docCode!,
-            recNo: creditNote.docNo!,
-            invDoc: currentInvoice.docCode!,
-            invNo: currentInvoice.docNo!,
+            recDoc: creditNote.docCode,
+            recNo: creditNote.docNo,
+            invDoc: currentInvoice.docCode,
+            invNo: currentInvoice.docNo,
             setOffAmount: finalSetOffAmount,
             createdAt: DateTime.now(),
           ),

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
+import '../features/dashboard/presentation/views/dashboard_view.dart';
 import '../features/home/home.dart';
 
-class AppRouteObservers {
-  AppRouteObservers._();
+class AppRouteObserver {
+  AppRouteObserver._();
 
   static final AppRouteStackObserver stackObserver = AppRouteStackObserver();
 
-  static List<NavigatorObserver> get all => [
+  static List<NavigatorObserver> get observers => [
     // Global observer
     stackObserver,
 
     // Page-specific observers
-    HomeView.routeObserver
+    HomeView.routeObserver,
+    DashboardView.routeObserver,
   ];
 }
 

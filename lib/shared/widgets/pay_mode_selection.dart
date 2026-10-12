@@ -185,13 +185,13 @@ class _PayModeSelectionNewState extends State<PayModeSelectionNew> {
     try {
       final currentUser = await IAMService.instance.currentUser();
 
-      if (_selectedBank?.bankCode == null || _selectedBank!.bankCode!.isEmpty) {
+      if (_selectedBank?.bankCode == null || _selectedBank!.bankCode.isEmpty) {
         throw AppException.validationBankNotSelected();
       }
 
       return await BankDbRepository.getBankBranches(
         currentUser,
-        bankCode: _selectedBank!.bankCode!,
+        bankCode: _selectedBank!.bankCode,
       );
     } catch (e) {
       snackBar.error(message: e.toString());
@@ -583,13 +583,13 @@ class PayModeSelectionState extends State<PayModeSelection> {
     try {
       final currentUser = await IAMService.instance.currentUser();
 
-      if (_selectedBank?.bankCode == null || _selectedBank!.bankCode!.isEmpty) {
+      if (_selectedBank?.bankCode == null || _selectedBank!.bankCode.isEmpty) {
         throw AppException.validationBankNotSelected();
       }
 
       return await BankDbRepository.getBankBranches(
         currentUser,
-        bankCode: _selectedBank!.bankCode!,
+        bankCode: _selectedBank!.bankCode,
       );
     } catch (e) {
       snackBar.error(message: e.toString());

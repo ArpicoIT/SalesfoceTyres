@@ -1,29 +1,19 @@
 import 'package:arpicoiam/iam.dart';
 import 'package:flutter/material.dart';
+import 'package:salesforcetyres/app/theme/app_colors.dart';
+import 'package:salesforcetyres/features/collections/presentation/widgets/payment_section_card.dart';
 
-import '../../app/exceptions/app_exception.dart';
-import '../../app/route_paths.dart';
 import '../../helpers/list_helper.dart';
-import '../../helpers/number_helper.dart';
 import '../../models/credit_note_model.dart';
 import '../../models/customer_model.dart';
 import '../../models/invoice_model.dart';
-import '../../services/database/repositories/collection_db_repository.dart';
 import '../../services/database/repositories/credit_note_db_repository.dart';
 import '../../services/database/repositories/customer_db_repository.dart';
 import '../../services/database/repositories/invoice_db_repository.dart';
-import '../../services/database/repositories/sync_db_repository.dart';
 import '../../services/database/repositories/system_file_db_repository.dart';
-import '../../shared/components/app/app_alert.dart';
-import '../../shared/components/app/app_dialog.dart';
-import '../../shared/components/app/app_scaffold.dart';
-import '../../shared/components/button/app_button.dart';
 import '../../shared/components/form/async_search_picker.dart';
-import '../../shared/components/form/banking_amount_field.dart';
-import '../../shared/components/form/responsive_form_field.dart';
 import '../../shared/widgets/pay_mode_selection.dart';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -129,8 +119,8 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
   /// Variables
   double? _maxCashLimit;
   CustomerModel? _selectedCustomer;
-  PaymentDetails _paymentDetails = PaymentDetails();
-  bool _isStarting = false;
+  final PaymentDetails _paymentDetails = PaymentDetails();
+  final bool _isStarting = false;
   String _error = '';
 
   /// Constants
@@ -189,14 +179,10 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
       // loader.show();
       final currentUser = await IAMService.instance.currentUser();
 
-      if (customer.csCode == null) {
-        throw AppException.validationCustomerNotSelected();
-      }
-
       List<InvoiceModel> dataSource =
       await InvoiceDbRepository.getCustomerInvoicesWithJoinedDiscounts(
         currentUser,
-        csCode: customer.csCode!,
+        csCode: customer.csCode,
       );
 
       ListHelper.transformAll<InvoiceModel>(
@@ -233,14 +219,10 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
       // loader.show();
       final currentUser = await IAMService.instance.currentUser();
 
-      if (customer.csCode == null) {
-        throw AppException.validationCustomerNotSelected();
-      }
-
       List<CreditNoteModel> dataSource =
       await CreditNoteDbRepository.getCustomerCreditNotes(
         currentUser,
-        csCode: customer.csCode!,
+        csCode: customer.csCode,
       );
 
       ListHelper.transformAll<CreditNoteModel>(
@@ -365,82 +347,85 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: scheme.surfaceContainerLowest,
-      appBar: AppBar(
-        backgroundColor: scheme.surface,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.maybePop(context),
-        ),
-        titleSpacing: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Receive payment',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-            Text(
-              'Today, ${fmtDate(DateTime.now())}',
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: scheme.onSurfaceVariant),
-            ),
-          ],
-        ),
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(builder: (context, c) {
-          final wide = c.maxWidth >= _tabletBreakpoint;
-          final form = Form(key: _formKey, child: _buildFormSections());
-
-          if (!wide) {
-            return SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              child: form,
-            );
-          }
-
-          return Row(
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: scheme.surface,
+          surfaceTintColor: Colors.transparent,
+          scrolledUnderElevation: 0.5,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => Navigator.maybePop(context),
+          ),
+          titleSpacing: 0,
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 640),
-                      child: form,
+              const Text('Receive payment',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              Text(
+                'Today, ${fmtDate(DateTime.now())}',
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+        body: SafeArea(
+          child: LayoutBuilder(builder: (context, c) {
+            final wide = c.maxWidth >= _tabletBreakpoint;
+            final form = Form(key: _formKey, child: _buildFormSections());
+
+            if (!wide) {
+              return SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                child: form,
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: form,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(
-                width: 340,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 24, 24, 24),
-                  child: _SummaryPanel(
-                    customer: _customer,
-                    mode: _mode,
-                    amount: _amountValue,
-                    balanceAfter: _balanceAfter,
-                    onSave: _save,
+                SizedBox(
+                  width: 340,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 24, 24, 24),
+                    child: _SummaryPanel(
+                      customer: _customer,
+                      mode: _mode,
+                      amount: _amountValue,
+                      balanceAfter: _balanceAfter,
+                      onSave: _save,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          );
+              ],
+            );
+          }),
+        ),
+        bottomNavigationBar: LayoutBuilder(builder: (context, _) {
+          final wide = MediaQuery.sizeOf(context).width >= _tabletBreakpoint;
+          if (wide) return const SizedBox.shrink();
+          return _MobileActionBar(total: _amountValue, onSave: _save);
         }),
       ),
-      bottomNavigationBar: LayoutBuilder(builder: (context, _) {
-        final wide = MediaQuery.sizeOf(context).width >= _tabletBreakpoint;
-        if (wide) return const SizedBox.shrink();
-        return _MobileActionBar(total: _amountValue, onSave: _save);
-      }),
     );
   }
 
@@ -450,8 +435,7 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-
-        _SectionCard(
+        PaymentSectionCard(
           icon: Icons.storefront_rounded,
           title: 'Customer',
           child: AsyncSearchPicker<CustomerModel>(
@@ -467,7 +451,7 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _SectionCard(
+        PaymentSectionCard(
           icon: Icons.account_balance_wallet_rounded,
           title: 'Payment mode',
           child: PayModeSelectionNew(
@@ -478,14 +462,14 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
         Text('New'),
 
 
-        _SectionCard(
+        PaymentSectionCard(
           icon: Icons.storefront_rounded,
           title: 'Customer',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DropdownButtonFormField<Customer>(
-                value: _customer,
+                initialValue: _customer,
                 isExpanded: true,
                 decoration: _decoration(
                   context,
@@ -512,7 +496,7 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _SectionCard(
+        PaymentSectionCard(
           icon: Icons.attach_money_rounded,
           title: 'Receipt amount',
           child: Column(
@@ -580,7 +564,7 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
         ),
         const SizedBox(height: 16),
 
-        _SectionCard(
+        PaymentSectionCard(
           icon: Icons.account_balance_wallet_rounded,
           title: 'Payment mode',
           child: Column(
@@ -676,7 +660,7 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
               const SizedBox(height: 12),
               _twoCol(
                 DropdownButtonFormField<String>(
-                  value: _bank,
+                  initialValue: _bank,
                   isExpanded: true,
                   decoration: _decoration(context,
                       label: 'Bank',
@@ -692,7 +676,7 @@ class _ReceivePaymentScreenState extends State<ReceivePaymentScreen> {
                   }),
                 ),
                 DropdownButtonFormField<String>(
-                  value: _branch,
+                  initialValue: _branch,
                   isExpanded: true,
                   decoration: _decoration(context,
                       label: 'Branch',
@@ -744,7 +728,7 @@ InputDecoration _decoration(
   return InputDecoration(
     labelText: label,
     hintText: hint,
-    hintStyle: TextStyle(color: s.onSurfaceVariant.withOpacity(0.6)),
+    hintStyle: TextStyle(color: s.onSurfaceVariant.withValues(alpha: 0.6)),
     prefixIcon: icon == null ? null : Icon(icon, size: 20),
     filled: true,
     fillColor: s.surfaceContainerLow,
@@ -757,49 +741,7 @@ InputDecoration _decoration(
   );
 }
 
-class _SectionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Widget child;
-  const _SectionCard(
-      {required this.icon, required this.title, required this.child});
 
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant.withOpacity(0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, size: 18, color: cs.onPrimaryContainer),
-              ),
-              const SizedBox(width: 10),
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w600)),
-            ],
-          ),
-          const SizedBox(height: 14),
-          child,
-        ],
-      ),
-    );
-  }
-}
 
 class _OutstandingBadge extends StatelessWidget {
   final double value;
@@ -860,7 +802,7 @@ class _ModeTile extends StatelessWidget {
             color: selected ? s.primaryContainer : s.surfaceContainerLow,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: selected ? s.primary : s.outlineVariant.withOpacity(0.6),
+              color: selected ? s.primary : s.outlineVariant.withValues(alpha: 0.6),
               width: selected ? 1.8 : 1,
             ),
           ),
@@ -898,7 +840,7 @@ class _MobileActionBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: s.surface,
-        border: Border(top: BorderSide(color: s.outlineVariant.withOpacity(0.5))),
+        border: Border(top: BorderSide(color: s.outlineVariant.withValues(alpha: 0.5))),
       ),
       child: SafeArea(
         top: false,
@@ -982,7 +924,7 @@ class _SummaryPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: s.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: s.outlineVariant.withOpacity(0.5)),
+        border: Border.all(color: s.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -37,9 +37,9 @@ class Responsive {
 
   bool get isKeyboardVisible => viewInsets.bottom > 0;
 
-  bool get isPhone => width < 600;
+  bool get isPhone => width < 620;
 
-  bool get isTablet => width >= 600 && width < 1024;
+  bool get isTablet => width >= 620 && width < 1024; // 600
 
   bool get isDesktop => width >= 1024;
 

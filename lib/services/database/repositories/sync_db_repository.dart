@@ -2,6 +2,7 @@ import 'package:arpicoiam/iam.dart';
 import 'package:flutter/material.dart';
 
 import '../../../config/api_paths.dart';
+import '../../../config/app_config.dart';
 import '../../../helpers/json_helper.dart';
 import '../../../models/collection_model.dart';
 import '../../../models/visit_model.dart';
@@ -14,6 +15,13 @@ class SyncDbRepository {
   SyncDbRepository._();
 
   static Future<(int success, int failed)> collectionHeaders() async {
+    if(!AppConfig.enableLiveSync){
+      Logger.logError(
+        'Collection headers sync skipped: live sync is disabled in the application configuration.',
+      );
+      return (0,0);
+    }
+
     final dio = ApiManager.client.dio;
 
     final currentUser = await IAMService.instance.currentUser();
@@ -88,6 +96,13 @@ class SyncDbRepository {
   }
 
   static Future<(int success, int failed)> collectionDetails() async {
+    if(!AppConfig.enableLiveSync){
+      Logger.logError(
+        'Collection details sync skipped: live sync is disabled in the application configuration.',
+      );
+      return (0,0);
+    }
+
     final dio = ApiManager.client.dio;
 
     final currentUser = await IAMService.instance.currentUser();
@@ -162,6 +177,13 @@ class SyncDbRepository {
   }
 
   static Future<(int success, int failed)> visitLocations() async {
+    if(!AppConfig.enableLiveSync){
+      Logger.logError(
+        'Visit locations sync skipped: live sync is disabled in the application configuration.',
+      );
+      return (0,0);
+    }
+
     final dio = ApiManager.client.dio;
 
     final currentUser = await IAMService.instance.currentUser();
